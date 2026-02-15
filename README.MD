@@ -40,6 +40,7 @@ The application is configured using environment variables. You can use a `.env` 
    ```bash
    pip install requests
    pip install python-dotenv
+   pip install pytz
    ```
 3. Set up your environment variables (see [Configuration](#configuration)).
 
@@ -50,8 +51,13 @@ Run the main script to start the synchronization loop:
 ```bash
 python main.py
 ```
-
 The script will initialize the local database if it doesn't exist and start checking for updates every 15 seconds.
+
+Available launch parameters:
+
+| Parameter            | Description                     |
+|----------------------|---------------------------------|
+| `--once`<br/>`-once` | Run only once instead of a loop |
 
 ## How it Works
 1. **Detection**: The script fetches active problems from Zabbix.
