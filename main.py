@@ -61,6 +61,11 @@ def run_sync():
 
     # 0. Fetch problems from zabbix and db
     zabbix_problems = zabbix.get_problems()
+    # Filter problems: only include those with tag 'trigger_autotask' == 'yes'
+    zabbix_problems = [
+        p for p in zabbix_problems
+        if any(tag.get('tag') == 'trigger_autotask' and tag.get('value') == 'yes' for tag in p.get('tags', []))
+    ]
     zabbix_eventids = {str(p['eventid']) for p in zabbix_problems}
     
     stored_problems = get_stored_problems()

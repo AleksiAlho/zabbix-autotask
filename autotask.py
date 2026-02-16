@@ -53,6 +53,12 @@ class Autotask:
 
         customer_company = self.get_customer_company(customer_in_tag)
 
+        type_tag = ""
+        for tag in problem["tags"]:
+            if tag["tag"] == "type":
+                type_tag = tag["value"]
+                break
+
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
@@ -66,13 +72,14 @@ class Autotask:
             "priority": 3, #TODO: Relative to problem severity?
             "queueID": int(os.getenv("AUTOTASK_TICKET_QUEUE_ID")),
             "companyID": customer_company["id"],
+            "ticketType": int(os.getenv("AUTOTASK_TICKET_TYPE")),
             "description": f"Problem title: {problem['name']}\n"+
             f"Host name: {problem['hosts'][0]['name']}\n"+
             f"Problem started at: {problem_start.strftime('%d/%m/%Y %H:%M:%S')}\n"+
             f"Operation data(if any): {problem['opdata']}\n\n"+
             f"This ticket will be resolved automatically when the problem is resolved in Zabbix.",
             "ticketCategory": int(os.getenv("AUTOTASK_TICKET_CATEGORY")),
-            "title": f"{problem['name']}"
+            "title": f"{problem['name']} {f"type:{type_tag}" if type_tag != '' else ''}"
         }
 
         response = requests.post(url=self.api_url+"/Tickets", data=json.dumps(request_body), headers=headers)
