@@ -46,7 +46,7 @@ class Autotask:
             print(f"Created a fake Autotask ticket {ticket_id} for Zabbix event {problem['eventid']}")
             return ticket_id
 
-        problem_start = datetime.fromtimestamp(int(problem["clock"]), tz=pytz.timezone("Europe/Helsinki"))
+        problem_start = datetime.fromtimestamp(int(problem["clock"]), tz=pytz.timezone(os.getenv("TIMEZONE")))
 
         customer_in_tag = ""
         for tag in problem["tags"]:
@@ -81,8 +81,8 @@ class Autotask:
             "description": f"Problem title: {problem['name']}\n"+
             f"Host name: {problem['hosts'][0]['name']}\n"+
             f"Problem started at: {problem_start.strftime('%d/%m/%Y %H:%M:%S')}\n"+
-            f"Operation data(if any): {problem['opdata']}\n\n"+
-            f"This ticket will be resolved automatically when the problem is resolved in Zabbix.",
+            f"Operational data (if any): {problem['opdata']}\n\n"+
+            f"This ticket will be resolved automatically once the problem is resolved in Zabbix.",
             "ticketCategory": int(os.getenv("AUTOTASK_TICKET_CATEGORY")),
             "title": f"{problem['name']} {f"type:{type_tag}" if type_tag != '' else ''}"
         }
