@@ -37,13 +37,16 @@ The application is configured using environment variables. You can use a `.env` 
 ## Installation
 
 1. Clone the repository.
-2. Install dependencies:
+2. Set up virtual env:
    ```bash
-   pip install requests
-   pip install python-dotenv
-   pip install pytz
+   python -m venv venv
+   source venv/bin/activate
    ```
-3. Set up your environment variables (see [Configuration](#configuration)).
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Set up your environment variables (see [Configuration](#configuration)).
 
 ## Usage
 
