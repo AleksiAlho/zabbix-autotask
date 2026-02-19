@@ -26,7 +26,7 @@ class Autotask:
             "Secret": self.api_secret,
         }
 
-        url_with_params = f"{self.api_url}/Companies/query?search={urllib.parse.quote_plus(f'{{\"filter\":[{{\"op\":\"contains\",\"field\":\"CompanyName\",\"value\":\"{name}\"}}]}}')}"
+        url_with_params = f"{self.api_url}/Companies/query?search={urllib.parse.quote_plus(f'{{\"filter\":[{{\"op\":\"eq\",\"field\":\"CompanyName\",\"value\":\"{name}\"}}]}}')}"
         response = requests.get(url=url_with_params, headers=headers)
         if response.status_code != 200:
             raise Exception(f"Failed to get customer company: {response.text}")
