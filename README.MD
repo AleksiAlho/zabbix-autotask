@@ -56,9 +56,10 @@ The script will initialize the local database if it doesn't exist and start chec
 
 Available launch parameters:
 
-| Parameter            | Description                     |
-|----------------------|---------------------------------|
-| `--once`<br/>`-once` | Run only once instead of a loop |
+| Parameter            | Description                      |
+|----------------------|----------------------------------|
+| `--once`<br/>`-once` | Run only once instead of a loop  |
+| `--dry`<br/>`-dry`   | Run with fake Autotask API calls |
 
 ## How it Works
 0. **Zabbix Setup**: Tag templates, hosts and/or triggers with `trigger_autotask=yes`, and `customer=Autotask customer name here`

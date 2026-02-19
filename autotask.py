@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import urllib.parse
 from typing import Dict
 
@@ -9,7 +10,8 @@ from datetime import datetime, timezone, tzinfo
 
 
 class Autotask:
-    def __init__(self, api_url: str, username: str, api_secret: str, api_integration_code: str):
+    def __init__(self, args, api_url: str, username: str, api_secret: str, api_integration_code: str):
+        self.args = args
         self.api_url = api_url
         self.username = username
         self.api_secret = api_secret
@@ -37,9 +39,12 @@ class Autotask:
 
     def create_ticket(self, problem: Dict) -> int:
         """
-        Placeholder function to create an Autotask ticket.
-        Returns a fake ticket ID.
+        Function to create an Autotask ticket.
         """
+        if self.args.dry:
+            ticket_id = random.randint(1, 100000)
+            print(f"Created a fake Autotask ticket {ticket_id} for Zabbix event {problem['eventid']}")
+            return ticket_id
 
         problem_start = datetime.fromtimestamp(int(problem["clock"]), tz=pytz.timezone("Europe/Helsinki"))
 
@@ -96,6 +101,9 @@ class Autotask:
         Function to resolve an Autotask ticket.
         """
 
+        if self.args.dry:
+            return
+
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
@@ -108,4 +116,3 @@ class Autotask:
         response = requests.patch(url=self.api_url+"/Tickets", data=request_body, headers=headers)
         if response.status_code != 200:
             raise Exception(f"Failed to resolve ticket {ticket_id}: {response.text}")
-        return True

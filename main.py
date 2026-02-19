@@ -9,11 +9,17 @@ import dotenv
 from zabbix import Zabbix
 from autotask import Autotask
 
-dotenv.load_dotenv()
+dotenv.load_dotenv(".env")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Params
+parser = argparse.ArgumentParser()
+parser.add_argument("--dry", "-dry", action="store_true", help="Dry run to skip autotask API calls and use mock IDs instead")
+parser.add_argument("--once", "-once", action="store_true", help="Run sync once and exit")
+args = parser.parse_args()
 
 DB_PATH = os.getenv("DB_PATH")
 
@@ -54,7 +60,8 @@ def delete_problem(eventid):
 def run_sync():
     zabbix = Zabbix(api_url=os.getenv("ZABBIX_API_URL"),
                     api_key=os.getenv("ZABBIX_API_KEY"))
-    autotask = Autotask(api_url=os.getenv("AUTOTASK_API_URL"),
+    autotask = Autotask(args=args,
+                        api_url=os.getenv("AUTOTASK_API_URL"),
                         username=os.getenv("AUTOTASK_API_USERNAME"),
                         api_secret=os.getenv("AUTOTASK_API_SECRET"),
                         api_integration_code=os.getenv("AUTOTASK_API_INTEGRATION_CODE"))
@@ -97,9 +104,8 @@ def run_sync():
 def main():
     init_db()
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--once", "-once", action="store_true", help="Run sync once and exit")
-    args = parser.parse_args()
+    if args.dry:
+        logger.info(f"Dry run, autotask calls will be faked...")
 
     if args.once:
         logger.info("Running sync once...")
