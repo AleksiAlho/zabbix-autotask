@@ -17,23 +17,31 @@ logger = logging.getLogger(__name__)
 
 # Params
 parser = argparse.ArgumentParser()
-parser.add_argument("--dry", "-dry", action="store_true", help="Dry run to skip autotask API calls and use mock IDs instead")
+parser.add_argument("--dry", "-dry", action="store_true",
+                    help="Dry run to skip autotask API calls and use mock IDs instead")
 parser.add_argument("--once", "-once", action="store_true", help="Run sync once and exit")
 args = parser.parse_args()
 
 DB_PATH = os.getenv("DB_PATH")
 
+
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS problems (
-            eventid TEXT PRIMARY KEY,
-            ticket_id TEXT
-        )
-    ''')
+                   CREATE TABLE IF NOT EXISTS problems
+                   (
+                       eventid
+                       TEXT
+                       PRIMARY
+                       KEY,
+                       ticket_id
+                       TEXT
+                   )
+                   ''')
     conn.commit()
     conn.close()
+
 
 def get_stored_problems():
     conn = sqlite3.connect(DB_PATH)
@@ -43,6 +51,7 @@ def get_stored_problems():
     conn.close()
     return {row[0]: row[1] for row in rows}
 
+
 def store_problem(eventid, ticket_id):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -50,12 +59,14 @@ def store_problem(eventid, ticket_id):
     conn.commit()
     conn.close()
 
+
 def delete_problem(eventid):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('DELETE FROM problems WHERE eventid = ?', (eventid,))
     conn.commit()
     conn.close()
+
 
 def run_sync():
     zabbix = Zabbix(api_url=os.getenv("ZABBIX_API_URL"),
@@ -74,10 +85,14 @@ def run_sync():
         if any(tag.get('tag') == 'trigger_autotask' and tag.get('value') == 'yes' for tag in p.get('tags', []))
     ]
     zabbix_eventids = {str(p['eventid']) for p in zabbix_problems}
-    
+
     stored_problems = get_stored_problems()
     stored_eventids = set(stored_problems.keys())
-    
+
+    # Add host info to problem instance
+    for p in zabbix_problems:
+        p['hosts'] = zabbix.get_event(p['eventid'])['hosts']
+
     # 1. See if local sqlite database has any problems that don't exist in zabbix anymore
     to_delete = stored_eventids - zabbix_eventids
     for eventid in to_delete:
@@ -101,6 +116,7 @@ def run_sync():
         ticket_id = autotask.create_ticket(problem)
         store_problem(eventid, ticket_id)
 
+
 def main():
     init_db()
 
@@ -118,8 +134,9 @@ def main():
             run_sync()
         except Exception as e:
             logger.error(f"An error occurred: {e}. Retrying in 15 seconds...")
-        
+
         time.sleep(15)
+
 
 if __name__ == "__main__":
     main()

@@ -21,18 +21,19 @@ class Zabbix:
         self.api_key = api_key
         self.api_url = api_url
 
-    def get_problems(self) -> List[Dict]:
+    def get_event(self, eventid: str) -> dict:
         """
-        Retrieves a list of problems from Zabbix API.
+        Retrieves a specific event from Zabbix API.
 
         Returns:
-            List[Dict]: List of problems as dictionaries.
+            dict: Event as dict.
         """
 
         reqBody = {
             "jsonrpc": "2.0",
             "method": "event.get",
             "params": {
+                "eventids": [eventid],
                 "selectTags": "extend",
                 "selectHosts": ["name"],
                 "sortfield": ["eventid"],
@@ -48,11 +49,39 @@ class Zabbix:
         response = requests.post(url=self.api_url, data=json.dumps(reqBody), headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json-rpc"})
         if response.status_code != 200:
             response.raise_for_status()
+            return {}
+
+        response_object = response.json()
+
+        return response_object['result'][0]
+
+    def get_problems(self) -> List[dict]:
+        """
+        Retrieves a list of active problems from Zabbix API.
+
+        Returns:
+            List[dict]: List of problems as dictionaries.
+        """
+
+        reqBody = {
+            "jsonrpc": "2.0",
+            "method": "problem.get",
+            "params": {
+                "selectTags": "extend",
+                "selectAcknowledges": "extend",
+                "selectSuppressionData": "extend",
+                "sortfield": ["eventid"],
+                "sortorder": "DESC",
+            },
+            "id": 1
+        }
+
+        # Do HTTP POST
+        response = requests.post(url=self.api_url, data=json.dumps(reqBody), headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json-rpc"})
+        if response.status_code != 200:
+            response.raise_for_status()
             return []
 
         response_object = response.json()
 
-        # Filter out events with non-zero r_eventid as those are already resolved
-        filtered_events = [event for event in response_object['result'] if event.get('r_eventid', 0) == '0']
-
-        return filtered_events
+        return response_object['result']
