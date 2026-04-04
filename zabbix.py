@@ -38,6 +38,7 @@ class Zabbix:
                 "selectHosts": ["name"],
                 "sortfield": ["eventid"],
                 "sortorder": "DESC",
+                "suppressed": False,
                 "filter": {
                     "value": "1"
                 }
@@ -68,8 +69,7 @@ class Zabbix:
             "method": "problem.get",
             "params": {
                 "selectTags": "extend",
-                "selectAcknowledges": "extend",
-                "selectSuppressionData": "extend",
+                "suppressed": False,
                 "sortfield": ["eventid"],
                 "sortorder": "DESC",
             },
